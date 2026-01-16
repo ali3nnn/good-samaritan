@@ -29,6 +29,7 @@ export default function Home() {
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [locatingUser, setLocatingUser] = useState(false)
+  const [shouldZoomToUser, setShouldZoomToUser] = useState(false)
   const [displayName, setDisplayName] = useState<string | null>(null)
   const [isAddMode, setIsAddMode] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -38,6 +39,24 @@ export default function Home() {
     const storedName = localStorage.getItem('userDisplayName')
     if (storedName) {
       setDisplayName(storedName)
+    }
+  }, [])
+
+  // Get user location on mount
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          })
+        },
+        (err) => {
+          console.error('Geolocation error:', err)
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      )
     }
   }, [])
 
@@ -87,6 +106,7 @@ export default function Home() {
     }
 
     setLocatingUser(true)
+    setShouldZoomToUser(true)
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setUserLocation({
@@ -99,6 +119,7 @@ export default function Home() {
         console.error('Geolocation error:', err)
         alert('Unable to get your location. Please check your browser permissions.')
         setLocatingUser(false)
+        setShouldZoomToUser(false)
       },
       { enableHighAccuracy: true, timeout: 10000 }
     )
@@ -135,6 +156,8 @@ export default function Home() {
         userLocation={userLocation}
         isAddMode={isAddMode}
         setIsAddMode={setIsAddMode}
+        shouldZoomToUser={shouldZoomToUser}
+        onZoomComplete={() => setShouldZoomToUser(false)}
       />
 
       {/* Header - hidden on mobile */}

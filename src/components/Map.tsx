@@ -24,9 +24,11 @@ interface MapComponentProps {
   userLocation?: { lat: number; lng: number } | null
   isAddMode: boolean
   setIsAddMode: (mode: boolean) => void
+  shouldZoomToUser?: boolean
+  onZoomComplete?: () => void
 }
 
-export default function MapComponent({ pins, onPinClick, onMapClick, selectedPinId, userLocation, isAddMode, setIsAddMode }: MapComponentProps) {
+export default function MapComponent({ pins, onPinClick, onMapClick, selectedPinId, userLocation, isAddMode, setIsAddMode, shouldZoomToUser, onZoomComplete }: MapComponentProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<Map | null>(null)
   const vectorSourceRef = useRef<VectorSource | null>(null)
@@ -269,7 +271,7 @@ export default function MapComponent({ pins, onPinClick, onMapClick, selectedPin
     clusterSourceRef.current.refresh()
   }, [pins, selectedPinId])
 
-  // Update user location on map and pan to it
+  // Update user location on map
   useEffect(() => {
     if (!userLocationSourceRef.current || !mapInstanceRef.current) return
 
@@ -281,16 +283,22 @@ export default function MapComponent({ pins, onPinClick, onMapClick, selectedPin
         isUserLocation: true,
       })
       userLocationSourceRef.current.addFeature(feature)
-
-      // Pan map to user location
-      const view = mapInstanceRef.current.getView()
-      view.animate({
-        center: fromLonLat([userLocation.lng, userLocation.lat]),
-        zoom: 14,
-        duration: 800,
-      })
     }
   }, [userLocation])
+
+  // Zoom to user location only when requested
+  useEffect(() => {
+    if (!shouldZoomToUser || !userLocation || !mapInstanceRef.current) return
+
+    const view = mapInstanceRef.current.getView()
+    view.animate({
+      center: fromLonLat([userLocation.lng, userLocation.lat]),
+      zoom: 14,
+      duration: 800,
+    })
+
+    onZoomComplete?.()
+  }, [shouldZoomToUser, userLocation, onZoomComplete])
 
   return (
     <div className="absolute inset-0">
