@@ -227,7 +227,7 @@ export default function Home() {
       <header className="hidden mobile:flex absolute top-4 left-4 z-10 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg px-4 py-3 items-center gap-3">
         <div>
           <h1 className="text-lg font-bold text-gray-800">HARTANEVOILOR.RO</h1>
-          <p className="text-xs text-gray-500">Find remote people, make connections</p>
+          <p className="text-xs text-gray-500">Oferă ajutor. Schimbă vieți.</p>
         </div>
         <button
           onClick={() => setShowProfileModal(true)}
@@ -270,7 +270,7 @@ export default function Home() {
           {/* Title section */}
           <div className="mb-4 pb-3 border-b border-gray-200">
             <h1 className="text-lg font-bold text-gray-800">HARTANEVOILOR.RO</h1>
-            <p className="text-xs text-gray-500">Find remote people, make connections</p>
+            <p className="text-xs text-gray-500">Oferă ajutor. Schimbă vieți.</p>
           </div>
 
           {/* Location count */}
@@ -324,7 +324,7 @@ export default function Home() {
               className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition-colors ${isAddMode
                 ? 'bg-red-500 text-white'
                 : 'text-gray-700 hover:bg-gray-100'
-              }`}
+                }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -341,7 +341,7 @@ export default function Home() {
               className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition-colors ${isSatelliteView
                 ? 'bg-blue-500 text-white'
                 : 'text-gray-700 hover:bg-gray-100'
-              }`}
+                }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -387,7 +387,7 @@ export default function Home() {
           className={`px-6 py-3 rounded-full font-semibold shadow-lg transition-all ${isAddMode
             ? 'bg-red-500 text-white hover:bg-red-600'
             : 'bg-blue-500 text-white hover:bg-blue-600'
-          }`}
+            }`}
         >
           {isAddMode ? 'Click on map to add pin' : '+ Add Location'}
         </button>
