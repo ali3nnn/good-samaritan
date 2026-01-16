@@ -70,8 +70,39 @@ export default function CommentThread({ pinId, comments, onCommentAdded }: Comme
 
   return (
     <div>
+      {/* Add Comment Form - at top */}
+      <form onSubmit={handleSubmit} className="mb-4">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            placeholder={userName ? `Comment as ${userName}...` : 'Write a comment...'}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
+            required
+          />
+          <button
+            type="submit"
+            disabled={submitting || !content.trim()}
+            className="w-10 h-10 flex items-center justify-center bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+            aria-label="Send comment"
+          >
+            {submitting ? (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 rotate-90" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+              </svg>
+            )}
+          </button>
+        </div>
+        {error && (
+          <p className="text-red-500 text-sm mt-2">{error}</p>
+        )}
+      </form>
+
       {/* Comments List */}
-      <div className="space-y-4 mb-6">
+      <div className="space-y-4">
         {comments.length === 0 ? (
           <p className="text-gray-500 text-sm text-center py-4">
             No comments yet. Be the first to comment!
@@ -97,30 +128,6 @@ export default function CommentThread({ pinId, comments, onCommentAdded }: Comme
           ))
         )}
       </div>
-
-      {/* Add Comment Form */}
-      <form onSubmit={handleSubmit} className="border-t pt-4">
-        <div className="mb-3">
-          <textarea
-            placeholder={userName ? `Write a comment as ${userName}...` : 'Write a comment...'}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm resize-none"
-            required
-          />
-        </div>
-        {error && (
-          <p className="text-red-500 text-sm mb-2">{error}</p>
-        )}
-        <button
-          type="submit"
-          disabled={submitting || !content.trim()}
-          className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm"
-        >
-          {submitting ? 'Posting...' : 'Post Comment'}
-        </button>
-      </form>
     </div>
   )
 }
