@@ -31,6 +31,7 @@ export default function Home() {
   const [locatingUser, setLocatingUser] = useState(false)
   const [displayName, setDisplayName] = useState<string | null>(null)
   const [isAddMode, setIsAddMode] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // Load display name on mount
   useEffect(() => {
@@ -136,8 +137,8 @@ export default function Home() {
         setIsAddMode={setIsAddMode}
       />
 
-      {/* Header */}
-      <header className="absolute top-4 left-4 z-10 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg px-4 py-3 flex items-center gap-3">
+      {/* Header - hidden on mobile */}
+      <header className="hidden mobile:flex absolute top-4 left-4 z-10 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg px-4 py-3 items-center gap-3">
         <div>
           <h1 className="text-lg font-bold text-gray-800">Good Samaritan</h1>
           <p className="text-xs text-gray-500">Find remote people, make connections</p>
@@ -153,15 +154,103 @@ export default function Home() {
         </button>
       </header>
 
-      {/* Pin count badge */}
-      <div className="absolute top-4 right-4 z-10 bg-white/95 backdrop-blur-sm rounded-full shadow-lg px-3 py-2">
+      {/* Pin count badge - hidden on mobile */}
+      <div className="hidden mobile:block absolute top-4 right-4 z-10 bg-white/95 backdrop-blur-sm rounded-full shadow-lg px-3 py-2">
         <span className="text-sm text-gray-600">
           <span className="font-semibold text-blue-500">{pins.length}</span> locations
         </span>
       </div>
 
-      {/* Bottom right buttons */}
-      <div className="absolute bottom-6 right-6 z-10 flex items-center gap-3">
+      {/* Mobile hamburger menu button */}
+      <button
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        className="mobile:hidden absolute top-4 right-4 z-20 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg p-3"
+        aria-label="Toggle menu"
+      >
+        {mobileMenuOpen ? (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        )}
+      </button>
+
+      {/* Mobile menu panel */}
+      {mobileMenuOpen && (
+        <div className="mobile:hidden absolute top-16 right-4 z-20 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg p-4 min-w-[200px]">
+          {/* Title section */}
+          <div className="mb-4 pb-3 border-b border-gray-200">
+            <h1 className="text-lg font-bold text-gray-800">Good Samaritan</h1>
+            <p className="text-xs text-gray-500">Find remote people, make connections</p>
+          </div>
+
+          {/* Location count */}
+          <div className="mb-4 pb-3 border-b border-gray-200">
+            <span className="text-sm text-gray-600">
+              <span className="font-semibold text-blue-500">{pins.length}</span> locations
+            </span>
+          </div>
+
+          {/* Menu items */}
+          <div className="space-y-2">
+            {/* Profile button */}
+            <button
+              onClick={() => {
+                setShowProfileModal(true)
+                setMobileMenuOpen(false)
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+              </svg>
+              <span>{displayName || 'Set Profile'}</span>
+            </button>
+
+            {/* Locate Me button */}
+            <button
+              onClick={() => {
+                handleLocateMe()
+                setMobileMenuOpen(false)
+              }}
+              disabled={locatingUser}
+              className="w-full flex items-center gap-3 px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {locatingUser ? (
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M3 11.5l19-9-9 19-2-8-8-2z" />
+                </svg>
+              )}
+              <span>Locate Me</span>
+            </button>
+
+            {/* Add Location button */}
+            <button
+              onClick={() => {
+                setIsAddMode(true)
+                setMobileMenuOpen(false)
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition-colors ${isAddMode
+                ? 'bg-red-500 text-white'
+                : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              <span>{isAddMode ? 'Adding location...' : 'Add Location'}</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom right buttons - hidden on mobile */}
+      <div className="hidden mobile:flex absolute bottom-6 right-6 z-10 items-center gap-3">
         {/* Locate Me Button */}
         <button
           onClick={handleLocateMe}
