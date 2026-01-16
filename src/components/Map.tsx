@@ -8,6 +8,7 @@ import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import { Cluster } from 'ol/source'
 import OSM from 'ol/source/OSM'
+import XYZ from 'ol/source/XYZ'
 import { fromLonLat, toLonLat } from 'ol/proj'
 import Feature, { FeatureLike } from 'ol/Feature'
 import Point from 'ol/geom/Point'
@@ -26,14 +27,18 @@ interface MapComponentProps {
   setIsAddMode: (mode: boolean) => void
   shouldZoomToUser?: boolean
   onZoomComplete?: () => void
+  isSatelliteView?: boolean
 }
 
-export default function MapComponent({ pins, onPinClick, onMapClick, selectedPinId, userLocation, isAddMode, setIsAddMode, shouldZoomToUser, onZoomComplete }: MapComponentProps) {
+export default function MapComponent({ pins, onPinClick, onMapClick, selectedPinId, userLocation, isAddMode, setIsAddMode, shouldZoomToUser, onZoomComplete, isSatelliteView }: MapComponentProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<Map | null>(null)
   const vectorSourceRef = useRef<VectorSource | null>(null)
   const clusterSourceRef = useRef<Cluster | null>(null)
   const userLocationSourceRef = useRef<VectorSource | null>(null)
+  const tileLayerRef = useRef<TileLayer<OSM | XYZ> | null>(null)
+  const labelsLayerRef = useRef<TileLayer<XYZ> | null>(null)
+  const placesLayerRef = useRef<TileLayer<XYZ> | null>(null)
   const isAddModeRef = useRef(false)
   const setIsAddModeRef = useRef(setIsAddMode)
 
@@ -149,12 +154,37 @@ export default function MapComponent({ pins, onPinClick, onMapClick, selectedPin
       }
     })
 
+    const tileLayer = new TileLayer({
+      source: new OSM(),
+    })
+    tileLayerRef.current = tileLayer
+
+    // Roads layer for satellite view
+    const labelsLayer = new TileLayer({
+      source: new XYZ({
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
+        maxZoom: 19,
+      }),
+      visible: false,
+    })
+    labelsLayerRef.current = labelsLayer
+
+    // Places layer for satellite view (cities, towns, boundaries)
+    const placesLayer = new TileLayer({
+      source: new XYZ({
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+        maxZoom: 19,
+      }),
+      visible: false,
+    })
+    placesLayerRef.current = placesLayer
+
     const map = new Map({
       target: mapRef.current,
       layers: [
-        new TileLayer({
-          source: new OSM(),
-        }),
+        tileLayer,
+        labelsLayer,
+        placesLayer,
         vectorLayer,
         userLocationLayer,
       ],
@@ -299,6 +329,26 @@ export default function MapComponent({ pins, onPinClick, onMapClick, selectedPin
 
     onZoomComplete?.()
   }, [shouldZoomToUser, userLocation, onZoomComplete])
+
+  // Switch between OSM and satellite view
+  useEffect(() => {
+    if (!tileLayerRef.current || !labelsLayerRef.current || !placesLayerRef.current) return
+
+    if (isSatelliteView) {
+      tileLayerRef.current.setSource(
+        new XYZ({
+          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          maxZoom: 19,
+        })
+      )
+      labelsLayerRef.current.setVisible(true)
+      placesLayerRef.current.setVisible(true)
+    } else {
+      tileLayerRef.current.setSource(new OSM())
+      labelsLayerRef.current.setVisible(false)
+      placesLayerRef.current.setVisible(false)
+    }
+  }, [isSatelliteView])
 
   return (
     <div className="absolute inset-0">

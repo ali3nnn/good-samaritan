@@ -33,6 +33,7 @@ export default function Home() {
   const [displayName, setDisplayName] = useState<string | null>(null)
   const [isAddMode, setIsAddMode] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isSatelliteView, setIsSatelliteView] = useState(false)
 
   // Load display name on mount
   useEffect(() => {
@@ -158,6 +159,7 @@ export default function Home() {
         setIsAddMode={setIsAddMode}
         shouldZoomToUser={shouldZoomToUser}
         onZoomComplete={() => setShouldZoomToUser(false)}
+        isSatelliteView={isSatelliteView}
       />
 
       {/* Header - hidden on mobile */}
@@ -268,12 +270,40 @@ export default function Home() {
               </svg>
               <span>{isAddMode ? 'Adding location...' : 'Add Location'}</span>
             </button>
+
+            {/* Satellite View toggle */}
+            <button
+              onClick={() => {
+                setIsSatelliteView(!isSatelliteView)
+                setMobileMenuOpen(false)
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition-colors ${isSatelliteView
+                ? 'bg-blue-500 text-white'
+                : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{isSatelliteView ? 'Map View' : 'Satellite View'}</span>
+            </button>
           </div>
         </div>
       )}
 
       {/* Bottom right buttons - hidden on mobile */}
       <div className="hidden mobile:flex absolute bottom-6 right-6 z-10 items-center gap-3">
+        {/* Satellite View Toggle */}
+        <button
+          onClick={() => setIsSatelliteView(!isSatelliteView)}
+          className={`backdrop-blur-sm rounded-full shadow-lg p-3 transition-colors ${isSatelliteView ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-white/95 hover:bg-gray-100'}`}
+          title={isSatelliteView ? 'Switch to map view' : 'Switch to satellite view'}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${isSatelliteView ? 'text-white' : 'text-gray-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
+
         {/* Locate Me Button */}
         <button
           onClick={handleLocateMe}
