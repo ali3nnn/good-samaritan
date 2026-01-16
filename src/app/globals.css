@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* OpenLayers overrides */
+.ol-zoom {
+  top: auto !important;
+  bottom: 6rem !important;
+  left: auto !important;
+  right: 1rem !important;
+}
+
+.ol-zoom button {
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  font-size: 1.25rem !important;
+  background-color: white !important;
+  color: #1f2937 !important;
+  border-radius: 0.5rem !important;
+  margin: 0.25rem 0 !important;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1) !important;
+  cursor: pointer !important;
+}
+
+.ol-zoom button:hover {
+  background-color: #f3f4f6 !important;
+}
+
+.ol-attribution {
+  font-size: 0.625rem !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
