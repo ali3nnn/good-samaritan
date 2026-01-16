@@ -34,6 +34,7 @@ export default function Home() {
   const [isAddMode, setIsAddMode] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isSatelliteView, setIsSatelliteView] = useState(false)
+  const [userHeading, setUserHeading] = useState<number | null>(null)
 
   // Load display name on mount
   useEffect(() => {
@@ -58,6 +59,40 @@ export default function Home() {
         },
         { enableHighAccuracy: true, timeout: 10000 }
       )
+    }
+  }, [])
+
+  // Listen for device orientation (compass heading)
+  useEffect(() => {
+    const handleOrientation = (event: DeviceOrientationEvent) => {
+      // iOS uses webkitCompassHeading, Android uses alpha
+      let heading: number | null = null
+
+      if ('webkitCompassHeading' in event) {
+        // iOS - webkitCompassHeading is already the compass heading (0-360)
+        heading = (event as DeviceOrientationEvent & { webkitCompassHeading: number }).webkitCompassHeading
+      } else if (event.alpha !== null && event.absolute) {
+        // Android with absolute orientation - alpha is degrees from north
+        heading = (360 - event.alpha) % 360
+      } else if (event.alpha !== null) {
+        // Fallback - may not be accurate without absolute
+        heading = (360 - event.alpha) % 360
+      }
+
+      if (heading !== null) {
+        setUserHeading(heading)
+      }
+    }
+
+    // Request permission on iOS 13+
+    if (typeof (DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }).requestPermission === 'function') {
+      // Will be triggered by user interaction
+    } else {
+      window.addEventListener('deviceorientation', handleOrientation, true)
+    }
+
+    return () => {
+      window.removeEventListener('deviceorientation', handleOrientation, true)
     }
   }, [])
 
@@ -100,10 +135,35 @@ export default function Home() {
     setPins((prev) => [newPin, ...prev])
   }, [])
 
-  const handleLocateMe = useCallback(() => {
+  const handleLocateMe = useCallback(async () => {
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by your browser.')
       return
+    }
+
+    // Request device orientation permission on iOS 13+
+    const DeviceOrientationEventTyped = DeviceOrientationEvent as unknown as {
+      requestPermission?: () => Promise<'granted' | 'denied'>
+    }
+    if (typeof DeviceOrientationEventTyped.requestPermission === 'function') {
+      try {
+        const permission = await DeviceOrientationEventTyped.requestPermission()
+        if (permission === 'granted') {
+          window.addEventListener('deviceorientation', (event: DeviceOrientationEvent) => {
+            let heading: number | null = null
+            if ('webkitCompassHeading' in event) {
+              heading = (event as DeviceOrientationEvent & { webkitCompassHeading: number }).webkitCompassHeading
+            } else if (event.alpha !== null) {
+              heading = (360 - event.alpha) % 360
+            }
+            if (heading !== null) {
+              setUserHeading(heading)
+            }
+          }, true)
+        }
+      } catch (err) {
+        console.error('Orientation permission error:', err)
+      }
     }
 
     setLocatingUser(true)
@@ -155,6 +215,7 @@ export default function Home() {
         onMapClick={handleMapClick}
         selectedPinId={selectedPinId}
         userLocation={userLocation}
+        userHeading={userHeading}
         isAddMode={isAddMode}
         setIsAddMode={setIsAddMode}
         shouldZoomToUser={shouldZoomToUser}
@@ -165,7 +226,7 @@ export default function Home() {
       {/* Header - hidden on mobile */}
       <header className="hidden mobile:flex absolute top-4 left-4 z-10 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg px-4 py-3 items-center gap-3">
         <div>
-          <h1 className="text-lg font-bold text-gray-800">Good Samaritan</h1>
+          <h1 className="text-lg font-bold text-gray-800">HARTANEVOILOR.RO</h1>
           <p className="text-xs text-gray-500">Find remote people, make connections</p>
         </div>
         <button
@@ -208,7 +269,7 @@ export default function Home() {
         <div className="mobile:hidden absolute top-16 right-4 z-20 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg p-4 min-w-[200px]">
           {/* Title section */}
           <div className="mb-4 pb-3 border-b border-gray-200">
-            <h1 className="text-lg font-bold text-gray-800">Good Samaritan</h1>
+            <h1 className="text-lg font-bold text-gray-800">HARTANEVOILOR.RO</h1>
             <p className="text-xs text-gray-500">Find remote people, make connections</p>
           </div>
 

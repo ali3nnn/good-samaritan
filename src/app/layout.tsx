@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Good Samaritan - Remote People Mapper',
-  description: 'Map remote locations to help visitors find and reach people in hard-to-access areas.',
+  title: 'HARTA NEVOILOR',
+  description: 'O harta pentru gasi mai usor oamenii in nevoie',
 }
 
 export default function RootLayout({

@@ -12,7 +12,7 @@ import XYZ from 'ol/source/XYZ'
 import { fromLonLat, toLonLat } from 'ol/proj'
 import Feature, { FeatureLike } from 'ol/Feature'
 import Point from 'ol/geom/Point'
-import { Style, Fill, Stroke, Circle as CircleStyle, Text } from 'ol/style'
+import { Style, Fill, Stroke, Circle as CircleStyle, Text, RegularShape } from 'ol/style'
 import { createEmpty, extend } from 'ol/extent'
 import { PinData } from '@/types'
 import 'ol/ol.css'
@@ -23,6 +23,7 @@ interface MapComponentProps {
   onMapClick: (lat: number, lng: number) => void
   selectedPinId: string | null
   userLocation?: { lat: number; lng: number } | null
+  userHeading?: number | null
   isAddMode: boolean
   setIsAddMode: (mode: boolean) => void
   shouldZoomToUser?: boolean
@@ -30,7 +31,7 @@ interface MapComponentProps {
   isSatelliteView?: boolean
 }
 
-export default function MapComponent({ pins, onPinClick, onMapClick, selectedPinId, userLocation, isAddMode, setIsAddMode, shouldZoomToUser, onZoomComplete, isSatelliteView }: MapComponentProps) {
+export default function MapComponent({ pins, onPinClick, onMapClick, selectedPinId, userLocation, userHeading, isAddMode, setIsAddMode, shouldZoomToUser, onZoomComplete, isSatelliteView }: MapComponentProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<Map | null>(null)
   const vectorSourceRef = useRef<VectorSource | null>(null)
@@ -39,6 +40,7 @@ export default function MapComponent({ pins, onPinClick, onMapClick, selectedPin
   const tileLayerRef = useRef<TileLayer<OSM | XYZ> | null>(null)
   const labelsLayerRef = useRef<TileLayer<XYZ> | null>(null)
   const placesLayerRef = useRef<TileLayer<XYZ> | null>(null)
+  const userHeadingRef = useRef<number | null>(null)
   const isAddModeRef = useRef(false)
   const setIsAddModeRef = useRef(setIsAddMode)
 
@@ -117,13 +119,14 @@ export default function MapComponent({ pins, onPinClick, onMapClick, selectedPin
 
     const userLocationLayer = new VectorLayer({
       source: userLocationSource,
-      style: (feature) => {
+      style: () => {
         const elapsed = Date.now() - startTime
         const cycle = (elapsed % 2000) / 2000 // 2 second cycle
         const scale = 1 + cycle * 2 // Grow from 1 to 3
         const opacity = 0.5 * (1 - cycle) // Fade from 0.5 to 0
+        const heading = userHeadingRef.current
 
-        return [
+        const styles = [
           // Halo (outer pulsing ring)
           new Style({
             image: new CircleStyle({
@@ -144,6 +147,26 @@ export default function MapComponent({ pins, onPinClick, onMapClick, selectedPin
             }),
           }),
         ]
+
+        // Add direction cone if heading is available
+        if (heading !== null) {
+          styles.unshift(
+            // Direction cone (field of view indicator)
+            new Style({
+              image: new RegularShape({
+                points: 3,
+                radius: 30,
+                rotation: (heading * Math.PI) / 180,
+                angle: 0,
+                displacement: [0, -20],
+                fill: new Fill({ color: 'rgba(34, 197, 94, 0.3)' }),
+                stroke: new Stroke({ color: 'rgba(34, 197, 94, 0.6)', width: 1 }),
+              }),
+            })
+          )
+        }
+
+        return styles
       },
     })
 
@@ -315,6 +338,15 @@ export default function MapComponent({ pins, onPinClick, onMapClick, selectedPin
       userLocationSourceRef.current.addFeature(feature)
     }
   }, [userLocation])
+
+  // Update heading ref and trigger re-render
+  useEffect(() => {
+    userHeadingRef.current = userHeading ?? null
+    // Force re-render of user location layer
+    if (userLocationSourceRef.current && mapInstanceRef.current) {
+      userLocationSourceRef.current.changed()
+    }
+  }, [userHeading])
 
   // Zoom to user location only when requested
   useEffect(() => {
